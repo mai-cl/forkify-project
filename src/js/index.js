@@ -1,4 +1,5 @@
 import Search from './models/Search';
+import Recipe from './models/Recipe';
 import * as searchView from './views/searchView'
 import { elements, renderLoader, clearLoader } from './views/base';
 
@@ -10,6 +11,9 @@ import { elements, renderLoader, clearLoader } from './views/base';
  */
 const state = {}
 
+/**
+ * SEARCH CONTROLLER
+ */
 const controlSearch = async () => {
     // 1- Get query from view
     const query = searchView.getInput(); //TODO
@@ -24,13 +28,19 @@ const controlSearch = async () => {
         searchView.clearResults();
         renderLoader(elements.searchRes);
 
-        // 4- Search for recipes
-        await state.search.getResults();
-
-        // 5- Render results on UI
-        //console.log(state.search.result);
-        clearLoader();
-        searchView.renderResults(state.search.result);
+        try {
+            // 4- Search for recipes
+            await state.search.getResults();
+        
+            // 5- Render results on UI
+            //console.log(state.search.result);
+            clearLoader();
+            searchView.renderResults(state.search.result);
+            
+        } catch(error) {
+            alert('Something si wrong...');
+            clearLoader();
+        }
     }
 }
 
@@ -55,3 +65,50 @@ const search = new Search('pizza');
 console.log(search);
 search.getResults();
 */
+
+
+
+
+/**
+ * RECIPE CONTROLLER
+ */
+/*
+const r = new Recipe(46956);
+r.getRecipe();
+console.log(r);
+*/
+const controlRecipe = async () => {
+    //get ID from url
+    const id = window.location.hash.replace('#','');
+    console.log(id);
+
+    if (id) {
+        //prepare ui for changes
+
+        //create new recipe object
+        state.recipe = new Recipe(id);
+
+        try {
+            //get recipe data
+            await state.recipe.getRecipe();
+    
+            //calcultate servings and time
+            state.recipe.calcTime();
+            state.recipe.calcServings();
+    
+            //render recipe
+            console.log(state.recipe);
+
+        } catch(error) {
+            alert('Error processing recipe!');
+            //lo ideal seria agregar msjs a la UI
+        }
+    }
+
+}
+
+/* window.addEventListener('hashchange', controlRecipe);
+window.addEventListener('load', controlRecipe); */
+['hashchange', 'load'].forEach(event => window.addEventListener(event, controlRecipe));
+
+
