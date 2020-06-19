@@ -5,6 +5,7 @@ import Likes from './models/Likes';
 import * as searchView from './views/searchView'
 import * as recipeView from './views/recipeView'
 import * as listView from './views/listView'
+import * as likesView from './views/likesView'
 import { elements, renderLoader, clearLoader } from './views/base';
 
 /** Global state of the app
@@ -111,9 +112,13 @@ const controlRecipe = async () => {
             //render recipe
             //console.log(state.recipe);
             clearLoader();
-            recipeView.renderRecipe(state.recipe);
+            recipeView.renderRecipe(
+                state.recipe,
+                state.likes.isLiked(id)
+            );
 
         } catch(error) {
+            console.log(error);
             alert('Error processing recipe!');
             //lo ideal seria agregar msjs a la UI
         }
@@ -167,6 +172,11 @@ elements.shopping.addEventListener('click', e => {
 /**
  * LIKE CONTROLLER
  */
+//testing
+state.likes = new Likes();
+likesView.toggleLikeMenu(state.likes.getNumLikes());
+
+
 const controlLike = () => {
     if (!state.likes) state.likes = new Likes();
     const currentID = state.recipe.id;
@@ -181,20 +191,40 @@ const controlLike = () => {
             state.recipe.img
         )
         //toggle the like button
+        likesView.toggleLikeBtn(true);
 
         //add like to UI list
         console.log(state.likes);
+        likesView.renderLike(newLike);
     //user has liked current recipe
     } else {
         //remove like to the state
         state.likes.deleteLike(currentID);
 
         //toggle the like button
+        likesView.toggleLikeBtn(false);
 
         //remove like to UI list
         console.log(state.likes);
+        likesView.deleteLike(currentID);
     }
+    likesView.toggleLikeMenu(state.likes.getNumLikes());
 }
+
+
+//restore liked recipes on page load
+window.addEventListener('load', () => {
+    state.likes = new Likes();
+
+    //restore likes
+    state.likes.readStorage();
+
+    //toggle like menu button
+    likesView.toggleLikeMenu(state.likes.getNumLikes());
+
+    //render the existing likes
+    state.likes.likes.forEach(like => likesView.renderLike(like));
+})
 
 
 //handling recipe button clicks
